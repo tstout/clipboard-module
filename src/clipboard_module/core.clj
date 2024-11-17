@@ -15,8 +15,6 @@
             [seesaw.clipboard :refer [contents contents! system]])
   (:import [java.security MessageDigest]))
 
-(defn -main [& args] (println "hello world"))
-
 ;; look at https://yomguithereal.github.io/clj-fuzzy/clojure.html
 ;; for fuzzy match alogrithms
 
@@ -52,7 +50,7 @@
 
 
 (defn mk-frame []
-  (let [f   (frame :title "CLIP-UTIL")
+  (let [f   (frame :title "CLIP-UTIL" :visible? true)
         ops {:show        (fn [] (-> f pack! show!))
              :set-content (fn [content]
                             (config! f :content content)
@@ -60,11 +58,21 @@
     (fn [operation & args] (-> (ops operation) (apply args)))))
 
 
+(defn init-app []
+  (let [frame (mk-frame)
+        poller (clipboard-poller)]
+    (.start poller)
+    (frame :set-content (text :listen [:document #(prn (bean %))]))
+    (frame :show)))
+
+(defn -main [& args]
+  (init-app))
 
 
 (comment
   *e
 
+  (init-app)
   (def main-frame (mk-frame))
 
   (main-frame :show)
@@ -103,6 +111,22 @@
   (- bonus (* 0.22 bonus))
 
   *out*
+
+  (def f (frame :title "Get to know Seesaw"))
+  ;=> #'user/f
+  
+  ; So now we have a frame, but we haven't displayed it yet. Usually, we
+  ; want to pack and show a frame. pack! just auto-sizes the frame for its
+  ; contents
+  (-> f pack! show!)
+  (config f :title)
+
+  (import 'javax.swing.JFrame)
+  (def frame (JFrame. "Hello Frame"))
+  (.setSize frame 200 200)
+  (.setVisible frame true)
+
+
 
   ;;
   )
